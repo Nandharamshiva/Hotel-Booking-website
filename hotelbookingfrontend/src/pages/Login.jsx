@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { AuthContext } from '../context/AuthContext';
-import { LogIn } from 'lucide-react';
+import { LogIn, ShieldCheck } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
@@ -51,15 +51,16 @@ const Login = () => {
 
   return (
     <div className="flex justify-center items-center min-h-[70vh]">
-      <div className="bg-white p-8 rounded shadow-sm border w-full max-w-md">
+      <div className="bg-white p-8 rounded-2xl shadow-sm border w-full max-w-md">
         <div className="flex justify-center mb-6">
           <div className="p-3 bg-gray-50 rounded-full border">
             <LogIn className="h-6 w-6 text-gray-600" />
           </div>
         </div>
-        <h2 className="text-2xl font-semibold text-center mb-6 text-primary">Welcome back</h2>
+        <h2 className="text-2xl font-semibold text-center mb-1 text-primary">Welcome back</h2>
+        <p className="text-center text-sm text-gray-500 mb-6">Access your bookings, offers and trip details.</p>
         
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
+        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -85,7 +86,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
+            className="w-full bg-primary text-white py-2.5 px-4 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Log in'}
           </button>
@@ -109,6 +110,10 @@ const Login = () => {
             </div>
           </>
         )}
+
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+          <ShieldCheck className="h-3.5 w-3.5" /> Secure token-based authentication
+        </div>
 
         <div className="mt-6 text-center text-sm text-gray-500">
           Don't have an account? <Link to="/register" className="text-blue-600 hover:underline">Sign up</Link>

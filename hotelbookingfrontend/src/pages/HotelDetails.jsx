@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { AuthContext } from '../context/AuthContext';
-import { MapPin, CheckCircle, BedDouble, Calendar } from 'lucide-react';
+import { MapPin, CheckCircle, BedDouble, Calendar, Hotel } from 'lucide-react';
 
 // Get today's date in YYYY-MM-DD format
 const today = () => new Date().toISOString().split('T')[0];
@@ -11,6 +11,40 @@ const daysFromNow = (n) => {
   const d = new Date();
   d.setDate(d.getDate() + n);
   return d.toISOString().split('T')[0];
+};
+
+const HOTEL_FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=1600&q=80',
+];
+
+const ROOM_TYPE_IMAGES = {
+  STANDARD: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1200&q=80',
+  DELUXE: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80',
+  SUITE: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=1200&q=80',
+};
+
+const fallbackHotelImage = (hotelId) => {
+  const numeric = Number(hotelId);
+  const index = Number.isFinite(numeric)
+    ? Math.abs(numeric) % HOTEL_FALLBACK_IMAGES.length
+    : 0;
+  return HOTEL_FALLBACK_IMAGES[index];
+};
+
+const getRoomImage = (room) => {
+  const key = String(room?.roomType || '').toUpperCase();
+  return ROOM_TYPE_IMAGES[key] || ROOM_TYPE_IMAGES.STANDARD;
+};
+
+const resolveHotelImage = (hotel) => {
+  if (hotel?.imageUrl) return hotel.imageUrl;
+  if (hotel?.image) return hotel.image;
+  if (Array.isArray(hotel?.photos) && hotel.photos.length > 0) return hotel.photos[0];
+  return fallbackHotelImage(hotel?.id);
 };
 
 const HotelDetails = () => {
@@ -29,6 +63,9 @@ const HotelDetails = () => {
   const [checkOut, setCheckOut] = useState(daysFromNow(4));
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [roomAvailability, setRoomAvailability] = useState({});
+  const nights = checkIn && checkOut && checkOut > checkIn
+    ? Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
+    : 0;
 
   useEffect(() => {
     const fetchHotelData = async () => {
@@ -87,13 +124,12 @@ const HotelDetails = () => {
       return;
     }
 
-    const roomToBook = rooms.find(r => r.id === roomId);
+    const roomToBook = rooms.find(r => Number(r.id) === Number(roomId));
     if (!roomToBook) {
       setMessage({ type: 'error', text: 'Selected room not found.' });
       return;
     }
 
-    const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
     const totalPrice = roomToBook.price * nights;
 
     setBookingLoading(true);
@@ -141,21 +177,37 @@ const HotelDetails = () => {
   if (!hotel) return <div className="text-center py-20 text-red-500">Hotel not found.</div>;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
       {message && (
         <div className={`p-4 rounded text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
           {message.text}
         </div>
       )}
 
-      <div className="bg-white rounded-lg border p-6 md:p-8 shadow-sm">
+      <div className="bg-white rounded-2xl border p-6 md:p-8 shadow-sm">
+        <div className="mb-6 overflow-hidden rounded-xl border bg-slate-100 h-64 md:h-80">
+          <img
+            src={resolveHotelImage(hotel)}
+            alt={hotel.name}
+            className="h-full w-full object-cover"
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.src = fallbackHotelImage(hotel?.id);
+            }}
+          />
+        </div>
         <div className="flex justify-between items-start mb-4">
-          <div>
+          <div className="flex items-start gap-3">
+            <div className="h-11 w-11 rounded-xl bg-gray-900 text-white flex items-center justify-center">
+              <Hotel className="h-5 w-5" />
+            </div>
+            <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{hotel.name}</h1>
             <div className="flex items-center text-gray-500 text-sm">
               <MapPin className="h-4 w-4 mr-1" />
               {hotel.location}
             </div>
+          </div>
           </div>
         </div>
 
@@ -176,7 +228,7 @@ const HotelDetails = () => {
       </div>
 
       {/* Date picker panel */}
-      <div className="bg-white border rounded-lg p-5 shadow-sm">
+      <div className="bg-white border rounded-2xl p-5 shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
           <Calendar className="h-5 w-5 mr-2 text-gray-400" /> Select Your Stay Dates
         </h3>
@@ -208,10 +260,10 @@ const HotelDetails = () => {
             />
           </div>
         </div>
-        {checkIn && checkOut && checkOut > checkIn && (
+        {nights > 0 && (
           <p className="text-sm text-gray-500 mt-2">
             Duration: <span className="font-semibold text-gray-700">
-              {Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))} night(s)
+              {nights} night(s)
             </span>
           </p>
         )}
@@ -222,12 +274,21 @@ const HotelDetails = () => {
         {rooms.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {rooms.map(room => {
-              const bookedCount = roomAvailability[room.id] || 0;
+              const roomId = Number(room.id);
+              const bookedCount = Number(roomAvailability[roomId] ?? roomAvailability[String(roomId)] ?? 0);
               const availableRooms = (room.totalRooms || 0) - bookedCount;
               const isSoldOut = availableRooms <= 0;
 
               return (
-              <div key={room.id} className={`border rounded-lg p-5 bg-white shadow-sm flex flex-col ${isSoldOut ? 'opacity-60 bg-gray-50' : ''}`}>
+              <div key={room.id} className={`border rounded-xl p-5 bg-white shadow-sm flex flex-col ${isSoldOut ? 'opacity-60 bg-gray-50' : 'hover:shadow-md transition'}`}>
+                <div className="mb-4 overflow-hidden rounded-lg border h-36 bg-slate-100">
+                  <img
+                    src={getRoomImage(room)}
+                    alt={`${room.roomType || 'Standard'} room`}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <BedDouble className="h-5 w-5 mr-2 text-gray-400" />
@@ -257,7 +318,7 @@ const HotelDetails = () => {
                   <button
                     disabled={isSoldOut || (bookingLoading && selectedRoom === room.id)}
                     onClick={() => handleBook(room.id)}
-                    className="bg-primary text-white px-5 py-2 rounded text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
+                    className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
                   >
                     {isSoldOut
                       ? 'Sold Out'

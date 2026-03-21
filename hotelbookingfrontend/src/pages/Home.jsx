@@ -1,11 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { MapPin, DollarSign, CalendarRange, Star, Filter, X } from 'lucide-react';
+import { MapPin, DollarSign, CalendarRange, Star, Filter, X, Sparkles } from 'lucide-react';
 
 const today = () => new Date().toISOString().split('T')[0];
 
 const AMENITY_OPTIONS = ['WiFi', 'Pool', 'Gym', 'Spa', 'Parking', 'Restaurant', 'Bar', 'AC', 'Breakfast'];
+
+const HOTEL_FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=1200&q=80',
+];
+
+const fallbackHotelImage = (hotelId) => {
+  const numeric = Number(hotelId);
+  const index = Number.isFinite(numeric)
+    ? Math.abs(numeric) % HOTEL_FALLBACK_IMAGES.length
+    : 0;
+  return HOTEL_FALLBACK_IMAGES[index];
+};
+
+const resolveHotelImage = (hotel) => {
+  if (hotel?.imageUrl) return hotel.imageUrl;
+  if (hotel?.image) return hotel.image;
+  if (Array.isArray(hotel?.photos) && hotel.photos.length > 0) return hotel.photos[0];
+  return fallbackHotelImage(hotel?.id);
+};
+
+const normalizeHotel = (hotel) => ({
+  ...hotel,
+  name: hotel?.name || 'Unnamed Hotel',
+  location: hotel?.location || 'Location not available',
+  description: hotel?.description || 'Comfortable stay with curated amenities and premium service.',
+  imageUrl: resolveHotelImage(hotel),
+  amenities: Array.isArray(hotel?.amenities)
+    ? hotel.amenities
+    : typeof hotel?.amenities === 'string'
+      ? hotel.amenities.split(',').map((value) => value.trim()).filter(Boolean)
+      : [],
+});
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
@@ -19,9 +55,11 @@ const Home = () => {
   });
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [error, setError] = useState('');
 
   const fetchHotels = async () => {
     setLoading(true);
+    setError('');
     try {
       const query = new URLSearchParams();
       if (searchParams.location) query.append('location', searchParams.location);
@@ -32,9 +70,12 @@ const Home = () => {
       selectedAmenities.forEach(a => query.append('amenities', a));
 
       const res = await api.get(`/hotels/search?${query.toString()}`);
-      setHotels(res.data);
+      const incomingHotels = Array.isArray(res.data) ? res.data.map(normalizeHotel) : [];
+      setHotels(incomingHotels);
     } catch (err) {
       console.error('Failed to fetch hotels', err);
+      setError('Unable to load hotels right now. Please check backend services and try again.');
+      setHotels([]);
     } finally {
       setLoading(false);
     }
@@ -66,10 +107,14 @@ const Home = () => {
   return (
     <div className="space-y-10">
       {/* Hero Banner */}
-      <section className="bg-primary text-white rounded-xl p-8 md:p-12 shadow-md relative overflow-hidden">
+      <section className="bg-primary text-white rounded-2xl p-8 md:p-12 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_40%)]" />
         <div className="relative z-10 max-w-4xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 tracking-tight">Find your next stay</h1>
-          <p className="text-gray-300 text-lg mb-8 font-light">Search hotels by location, dates, price & amenities.</p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs tracking-wide uppercase font-semibold mb-4">
+            <Sparkles className="h-3.5 w-3.5" /> Trusted stays · Best experience
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 tracking-tight">Find your next perfect stay</h1>
+          <p className="text-gray-300 text-lg mb-8 font-light">Search by location, dates, price and amenities in one smooth flow.</p>
 
           <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg p-5 space-y-4">
             {/* Row 1: Location + Dates */}
@@ -170,7 +215,7 @@ const Home = () => {
 
               <button
                 type="submit"
-                className="ml-auto bg-gray-900 text-white font-medium py-2 px-7 rounded hover:bg-gray-700 transition text-sm"
+                className="ml-auto bg-gray-900 text-white font-medium py-2 px-7 rounded-lg hover:bg-gray-700 transition text-sm"
               >
                 Search Hotels
               </button>
@@ -213,6 +258,12 @@ const Home = () => {
           )}
         </div>
 
+        {error && (
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-16 text-gray-500">Loading hotels...</div>
         ) : hotels.length > 0 ? (
@@ -221,11 +272,19 @@ const Home = () => {
               <Link
                 to={`/hotels/${hotel.id}`}
                 key={hotel.id}
-                className="border rounded-xl overflow-hidden hover:shadow-lg transition-shadow bg-white flex flex-col h-full group"
+                className="border rounded-2xl overflow-hidden hover:shadow-lg transition-shadow bg-white flex flex-col h-full group"
               >
-                {/* Hotel Image Placeholder */}
-                <div className="h-44 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-b text-gray-400 relative">
-                  <span className="text-sm tracking-wide uppercase font-medium">Hotel Photo</span>
+                <div className="h-44 border-b text-gray-500 relative overflow-hidden bg-slate-100">
+                  <img
+                    src={hotel.imageUrl}
+                    alt={hotel.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.src = fallbackHotelImage(hotel.id);
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
                   {hotel.rating && (
                     <div className="absolute top-3 right-3 flex items-center bg-white rounded-full px-2 py-0.5 shadow-sm text-xs font-bold text-yellow-600">
                       <Star className="h-3 w-3 mr-0.5 fill-yellow-400 text-yellow-400" />
@@ -246,7 +305,7 @@ const Home = () => {
                   {hotel.amenities && hotel.amenities.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {hotel.amenities.slice(0, 4).map(amenity => (
-                        <span key={amenity} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        <span key={amenity} className="text-xs bg-slate-100 text-gray-700 px-2 py-0.5 rounded-full">
                           {amenity}
                         </span>
                       ))}

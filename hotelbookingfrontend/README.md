@@ -1,16 +1,44 @@
-# React + Vite
+# StayEase Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend for the Hotel Booking platform.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Install dependencies:
 
-## React Compiler
+```bash
+npm install
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. Create a `.env` file in this folder:
 
-## Expanding the ESLint configuration
+```env
+VITE_API_BASE_URL=http://localhost:8085
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. Start development server:
+
+```bash
+npm run dev
+```
+
+## Backend Mapping
+
+- API base URL is read from `VITE_API_BASE_URL`.
+- JWT is sent as `Authorization: Bearer <token>`.
+- User context is mapped automatically from JWT claims:
+	- `X-User-Id`
+	- `X-User-Role`
+
+These headers are required by backend endpoints such as:
+
+- `/bookings/my`
+- `/hotels` (admin create)
+- `/rooms` (admin create)
+
+## Build
+
+```bash
+npm run build
+```

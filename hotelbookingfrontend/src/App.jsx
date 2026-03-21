@@ -12,7 +12,7 @@ import Payment from './pages/Payment';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 font-sans">
+      <div className="min-h-screen flex flex-col bg-slate-50 text-gray-900 font-sans">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
           <Routes>
@@ -25,8 +25,8 @@ function App() {
             <Route path="/payment" element={<Payment />} />
           </Routes>
         </main>
-        <footer className="bg-white border-t py-6 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Hotel Explorer. All rights reserved.
+        <footer className="bg-white/90 border-t py-6 text-center text-sm text-gray-500 backdrop-blur">
+          &copy; {new Date().getFullYear()} StayEase. Built for seamless hotel booking.
         </footer>
       </div>
     </Router>
