@@ -236,17 +236,3 @@ npm run dev
 
 ---
 
-## 10) Future Improvements
-
-- Add centralized config management
-- Add distributed tracing (OpenTelemetry)
-- Add Redis caching for availability reads
-- Add Flyway/Liquibase migrations for strict schema versioning
-- Add CI/CD pipeline with service-level tests and container builds
-- Add role-based admin APIs and dashboard hardening
-
----
-
-## 11) Disclaimer
-
-This project includes payment and email notification simulation for learning/demo purposes and is not production-grade payment processing.
