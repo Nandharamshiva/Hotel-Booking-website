@@ -98,5 +98,18 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME:?MAIL_USERNAME is required}
       - MAIL_PASSWORD=${MAIL_PASSWORD:?MAIL_PASSWORD is required}
 
+  frontend:
+    build:
+      context: ./hotelbookingfrontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+    container_name: frontend
+    restart: on-failure
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+
 volumes:
   mysql_data:
