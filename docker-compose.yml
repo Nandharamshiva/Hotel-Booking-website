@@ -5,7 +5,7 @@ services:
     container_name: mysqldb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: adeeb@123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me}
     ports:
       - "3306:3306"
     volumes:
@@ -45,7 +45,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/auth_db?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=adeeb@123
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD:-change-me}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
   hotel-service:
@@ -60,7 +60,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/hoteldb?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=adeeb@123
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD:-change-me}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
   booking-service:
@@ -75,7 +75,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/bookings_db?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=adeeb@123
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD:-change-me}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
   payment-service:
@@ -90,7 +90,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/payment_db?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=adeeb@123
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD:-change-me}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
 volumes:
