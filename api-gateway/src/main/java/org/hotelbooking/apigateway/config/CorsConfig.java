@@ -23,7 +23,9 @@ public class CorsConfig {
                 "http://127.0.0.1:5173",
                 "http://104.214.178.215",
                 "http://104.214.178.215:80",
-                "http://104.214.178.215:8085"
+                "http://104.214.178.215:8085",
+                "http://stayease.eastasia.cloudapp.azure.com",
+                "http://stayease.eastasia.cloudapp.azure.com:8085"
         ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         // Allow all request headers
