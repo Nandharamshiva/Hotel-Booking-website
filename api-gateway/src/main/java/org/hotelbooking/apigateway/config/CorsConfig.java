@@ -18,7 +18,13 @@ public class CorsConfig {
     public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
         CorsConfiguration config = new CorsConfiguration();
         // Allow your Vite dev origin
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://104.214.178.215",
+                "http://104.214.178.215:80",
+                "http://104.214.178.215:8085"
+        ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         // Allow all request headers
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept",
